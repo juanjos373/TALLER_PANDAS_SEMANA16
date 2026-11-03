@@ -1,95 +1,87 @@
-# Taller práctico: análisis de datos con Pandas
+# Entregables — Taller práctico de Pandas
 
-Programa de consola que lee datos de ventas y clientes, los limpia, los une y los analiza. Se ejecuta desde un menú en la terminal, y cada opción corresponde a un módulo que vas a completar paso a paso.
+**Estudiante:** Juan Joé Sáenz
 
-Recuerda consultar la guía adjunta en PDF donde se te dará el paso a paso del trabajo.
+## Entregable 0: ambiente virtual
 
-## Requisitos
+El ambiente `venv` se creó y se instalaron las dependencias declaradas en `requirements.txt`:
 
-- Python 3.10 o superior
-- Git (para clonar el repositorio)
-- Conocimientos básicos de variables, listas y funciones
+- pandas 3.0.2
+- matplotlib 3.10.8
+- seaborn 0.13.2
 
-## Cómo empezar
+La captura de PowerShell muestra el ambiente virtual activo y las versiones de las dependencias.
 
-1. Clona el repositorio y entra a la carpeta del proyecto:
+## Entregable 1: exploración
 
-   ```
-   git clone <URL-DEL-REPOSITORIO>
-   cd <NOMBRE-DE-LA-CARPETA>
-   ```
+La ejecución de `python exploracion.py` reporta:
 
-2. Crea y activa un ambiente virtual. Las instrucciones completas, para Windows y Mac/Linux, están en `LEEME_ambiente.txt`.
+- Clientes: forma `(60, 5)`. Las cinco columnas tienen 60 valores no nulos; `id_cliente` es entero y las demás columnas son texto. Para `id_cliente`: media 30.5, mínimo 1 y máximo 60.
+- Ventas: forma `(68, 10)`. `producto` tiene 67 valores no nulos; las demás columnas tienen 68. Las columnas numéricas son `id_cliente`, `cantidad`, `precio_unitario` y `total`.
+- En ventas, `cantidad` tiene media 1.3088 y rango de 1 a 4; `total` tiene media de 282,000, mínimo de 18,000 y máximo de 2,450,000.
+- La salida completa de `.info()`, `.describe()` y de los ejemplos de indexación está disponible en las capturas enlazadas más abajo.
 
-3. Instala las librerías:
+**¿Por qué `.iloc[2, 6]` devuelve el total de V003?** Después de usar `id_venta` como índice, ya no se cuenta como columna. La fila 2 es V003 y la columna en posición 6, contando desde cero, es `total`; por eso devuelve `520000`.
 
-   ```
-   pip install -r requirements.txt
-   ```
+Los rangos también demuestran que `.loc['V001':'V006']` incluye ambos extremos, mientras que `.iloc[0:5]` incluye las posiciones 0 a 4. La separación por mes produjo 60 ventas de abril y 8 de mayo; `concat()` volvió a reunir las 68.
 
-4. Ejecuta el programa:
+## Entregable 2: limpieza
 
-   ```
-   python main.py
-   ```
+Antes de limpiar había 60 clientes y 68 ventas. No se encontraron filas duplicadas en ninguno de los archivos. En ventas se encontró un producto vacío; se reemplazó por `Sin especificar` para conservar la venta y su valor. Las fechas se convirtieron al tipo fecha y se reiniciaron los índices después de eliminar posibles duplicados. No se eliminaron filas: quedaron 60 clientes y 68 ventas. La columna `fecha_venta` se verifica como `datetime64[us]` después de la limpieza.
 
-Ejecuta siempre los comandos desde la carpeta del proyecto. Los módulos buscan los archivos a partir de su ubicación.
+## Entregable 3, parte 1: validación y merge
 
-## Estructura del proyecto
+Las validaciones confirmaron que `id_cliente` existe en las dos tablas, no está duplicado en clientes y tiene tipo `int64` en ambas. No hubo ventas sin cliente asociado. El merge produjo **68 filas y 14 columnas**.
 
-```
-├── main.py            Menú principal. No lo modifiques.
-├── carga.py           Lee los CSV. Ya está completo.
-├── limpieza.py        Limpia clientes y ventas. TODO 1 a 5.
-├── merge.py           Valida y une las tablas. TODO 6 y 7.
-├── analisis.py        Responde las preguntas de negocio. TODO 8 a 12.
-├── graficos.py        Dibuja dos gráficos sencillos. TODO 13 y 14.
-├── exploracion.py     Ejemplos de indexación, .loc, .iloc y concat. Se ejecuta por separado.
-├── requirements.txt   Versiones de las librerías.
-├── LEEME_ambiente.txt Pasos para crear el ambiente virtual.
-└── Data/
-    ├── raw/           Datos originales (cliente.csv, ventas.csv). No los modifiques.
-    └── processed/     Resultados que genera el programa.
-```
+La tabla unida tiene 14 columnas porque clientes aporta 5, ventas aporta 10 y `id_cliente` es la columna común: `5 + 10 - 1 = 14`. Se conserva el número de ventas porque se utiliza una unión `left`, con ventas como tabla de la izquierda.
 
-## Menú
+El resultado se guarda en `Data/processed/merge.csv`.
 
-| Opción | Qué hace |
-|---|---|
-| 1 | Carga los archivos CSV |
-| 2 | Limpia los datos |
-| 3 | Valida y une las tablas con merge |
-| 4 | Muestra el análisis y las respuestas del desafío |
-| 5 | Dibuja los gráficos de introducción |
-| 6 | Sale del programa |
+## Entregable 3, parte 2: análisis y desafío final
 
-Las opciones se usan en orden: primero cargar (1), luego limpiar (2), después unir (3) y finalmente analizar (4) o graficar (5).
+Los resultados se calcularon sobre las 68 ventas ya limpias y unidas.
 
-## Cómo completar el taller
+1. **¿Qué categoría genera más ingresos?** Tecnología, con **14,290,000 unidades monetarias**. Criterio: suma de `total` agrupada por categoría; es el mayor ingreso.
+2. **¿Qué canal vende más?** Online, con **35 ventas** frente a 33 de Tienda. Criterio: cantidad de transacciones. Online registró 14,669,000 y Tienda 4,507,000 unidades monetarias en ingresos.
+3. **¿Los clientes VIP compran más que los Regulares?** Sí, en promedio por cliente. VIP: 29 compras entre 24 clientes (**1.2083 compras por cliente**) y 8,066,000 unidades monetarias de gasto total (**336,083.33 por cliente**). Regular: 39 compras entre 36 clientes (**1.0833 compras por cliente**) y 11,110,000 unidades monetarias de gasto total (**308,611.11 por cliente**). Se compararon promedios porque los segmentos tienen distinto número de clientes.
+4. **¿Qué método de pago es el más usado?** Efectivo, con **30 ventas**; Tarjeta tuvo 25 y Transferencia 13. Criterio: conteo de ventas por método.
+5. **¿Cuáles son los cinco clientes con más compras?** Hay empate con dos compras; se ordenó por gasto total como desempate:
 
-1. Abre el archivo indicado en cada TODO. Cada función tiene un docstring con pistas.
-2. Completa el TODO y ejecuta `python main.py` para probar la opción correspondiente.
-3. Usa `exploracion.py` para practicar indexación, `.loc`, `.iloc` y `concat()` antes de aplicarlos en tu código.
+   | Cliente | Compras | Gasto total |
+   |---|---:|---:|
+   | Nicolas Cardona | 2 | 2,515,000 |
+   | Matias Rodriguez | 2 | 1,278,000 |
+   | Mia Quintero | 2 | 1,090,000 |
+   | Luna Montoya | 2 | 1,007,000 |
+   | Luis Perez | 2 | 730,000 |
 
-Las funciones que aún no completaste no dan error: devuelven los datos sin cambios, así que el menú siempre funciona.
+### Bonus: ingresos por mes
 
-## Entregables
+| Mes | Ingresos |
+|---|---:|
+| 2026-04 | 18,234,000 |
+| 2026-05 | 942,000 |
 
-Consulta el documento del taller (`guia_Taller_Pandas.pdf`) para ver el detalle de cada entregable y la rúbrica. En resumen:
+Abril de 2026 tuvo más ingresos.
 
-- Entregable 0: pantallazo del ambiente virtual activo y de la instalación.
-- Entregable 1: pantallazos de `.shape`, `.info()` y `.describe()`, y salida de `exploracion.py`.
-- Entregable 2: limpieza, con pantallazos antes y después y explicación.
-- Entregable 3: validación, merge y análisis, con pantallazos de las opciones 3 y 4.
-- Entregable 4: los dos gráficos (`.png`) y el código de `graficos.py`.
-- Desafío final: respuestas a las cinco preguntas, con el criterio usado en cada una.
+## Entregable 4: gráficos
 
-Para entregar, agrega al final de este `README.md` una sección con tu nombre y tus respuestas a las preguntas del desafío. Sube tus cambios al repositorio y envía el enlace por el formulario de entrega. La entrega es individual.
+Se generaron los dos gráficos de barras solicitados:
 
-## Preguntas de negocio
+- [`images/ventas_por_categoria.png`](./images/ventas_por_categoria.png)
+- [`images/ventas_por_canal.png`](./images/ventas_por_canal.png)
 
-1. ¿Qué categoría genera más ingresos?
-2. ¿Qué canal vende más?
-3. ¿Los clientes VIP compran más que los Regulares?
-4. ¿Qué método de pago es el más usado?
-5. ¿Cuáles son los cinco clientes con más compras?
+El código que los genera está en `graficos.py`; también se guardan bajo `Data/processed/graficos/`.
+
+## Evidencias de terminal
+
+Se incluyen capturas de ejecuciones reales en una terminal de PowerShell con el ambiente virtual del proyecto activo:
+
+- [`images/00_ambiente_instalacion.png`](./images/00_ambiente_instalacion.png): ambiente virtual y dependencias.
+- [`images/01_exploracion_clientes.png`](./images/01_exploracion_clientes.png) y [`images/01b_exploracion_ventas.png`](./images/01b_exploracion_ventas.png): `shape`, `info()` y `describe()` de los dos CSV originales.
+- [`images/02_exploracion_script_parte1.png`](./images/02_exploracion_script_parte1.png), [`images/02_exploracion_script_parte2.png`](./images/02_exploracion_script_parte2.png), [`images/02_exploracion_script_parte3.png`](./images/02_exploracion_script_parte3.png), [`images/02_exploracion_script_parte4.png`](./images/02_exploracion_script_parte4.png) y [`images/02_exploracion_script_parte5.png`](./images/02_exploracion_script_parte5.png): salida completa de `exploracion.py`, dividida para que sea legible.
+- [`images/03_limpieza.png`](./images/03_limpieza.png): nulos, duplicados, filas después de la limpieza y tipo de `fecha_venta`.
+- [`images/04_validacion_merge.png`](./images/04_validacion_merge.png): validaciones y resultado de la unión.
+- [`images/05_analisis_preguntas1_2.png`](./images/05_analisis_preguntas1_2.png) y [`images/05_analisis.png`](./images/05_analisis.png): resultados de las cinco preguntas y el bonus mensual.
+
+Los gráficos del entregable 4 también están en `images/`: `ventas_por_categoria.png` y `ventas_por_canal.png`.
