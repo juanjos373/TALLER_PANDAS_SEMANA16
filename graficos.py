@@ -15,8 +15,20 @@ def grafico_ventas_por_categoria(df):
     - plt.savefig(SALIDA / "ventas_por_categoria.png", bbox_inches="tight") guarda la imagen.
     - plt.show() la muestra en pantalla y plt.close() la cierra.
     """
-    # TODO 13: dibujar, poner títulos, guardar y mostrar el gráfico.
-    pass
+    datos = df.groupby("categoria")["total"].sum()
+    SALIDA.mkdir(parents=True, exist_ok=True)
+
+    plt.figure(figsize=(10, 6))
+    datos.plot(kind="bar")
+    plt.title("Ingresos por categoría")
+    plt.xlabel("Categoría")
+    plt.ylabel("Ingresos")
+    plt.tight_layout()
+    ruta = SALIDA / "ventas_por_categoria.png"
+    plt.savefig(ruta, bbox_inches="tight")
+    print(f"Gráfico guardado en: {ruta}")
+    plt.show()
+    plt.close()
 
 
 def grafico_ventas_por_canal(df):
@@ -24,8 +36,20 @@ def grafico_ventas_por_canal(df):
 
     Usa los mismos pasos que la función anterior, cambiando la columna "categoria" por "canal".
     """
-    # TODO 14: dibujar, poner títulos, guardar y mostrar el gráfico.
-    pass
+    datos = df.groupby("canal")["total"].sum()
+    SALIDA.mkdir(parents=True, exist_ok=True)
+
+    plt.figure(figsize=(8, 6))
+    datos.plot(kind="bar")
+    plt.title("Ingresos por canal")
+    plt.xlabel("Canal")
+    plt.ylabel("Ingresos")
+    plt.tight_layout()
+    ruta = SALIDA / "ventas_por_canal.png"
+    plt.savefig(ruta, bbox_inches="tight")
+    print(f"Gráfico guardado en: {ruta}")
+    plt.show()
+    plt.close()
 
 
 def graficar(df):
